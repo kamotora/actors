@@ -10,7 +10,7 @@
 -author("kamotora").
 
 %% API
--export([]).
+-export([main/0]).
 
 -import(common, [nop/1, send/2, say/2, sayEx/1, quoted/1, cookie/0, init/0, rand/1, rand/2, products/0]).
 
@@ -25,13 +25,18 @@ generateStorage() ->
   maps:from_list(lists:map(fun generateEntry/1, products())).
 %%  Storage = ets:new(storage, []),
 
+getNewCount(CurCount) ->
+  if
+    CurCount =< 0 -> 0;
+    true -> CurCount - 1
+  end.
+
 subCount(ProductName, Storage) ->
   ProductInfo = maps:get(ProductName, Storage),
-  maps:put(ProductName, #product{count = ProductInfo#product.count - 1, price = ProductInfo#product.price}, Storage),
+  maps:put(ProductName, #product{count = getNewCount(ProductInfo#product.count), price = ProductInfo#product.price}, Storage),
   maps:get(ProductName, Storage).
 
 warehouse(Storage) ->
-%%  вместо select, delete разделять по тому, кто послал запрос
   receive
     {Product, "Select"} ->
       sayEx(["Warehouse search ", quoted(Product), " in storage"]),

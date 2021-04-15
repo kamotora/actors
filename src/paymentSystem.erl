@@ -10,7 +10,7 @@
 -author("kamotora").
 
 %% API
--export([]).
+-export([paymentSystem/0, main/0]).
 
 -import(common, [nop/1, send/2, say/2, sayEx/1, quoted/1, cookie/0, init/0, rand/1, rand/2]).
 
@@ -23,8 +23,7 @@ paymentSystem() ->
       sayEx(["Get payment for ", quoted(Product), ", amount: ", Price]),
       check(Price),
       send(seller, {Product, Type});
-    {Product, Price, Type} when Type == "Refund"->
-%%      todo проверить перед возвратом, что товар был оплачен
+    {Product, Price, Type} when Type == "Refund" ->
       sayEx(["Get refund for ", quoted(Product), ", amount: ", Price]),
       check(Price),
       send(customer, {Price, "Refund"})

@@ -11,7 +11,7 @@
 
 %% API
 -export([nop/0, nop/1, nameOf/1, send/2, say/2, quoted/1, say/1, sayEx/1,
-  pingNodes/1, nodez/0, injectPostfix/1, cookie/0, init/0, init/1, rand/1, rand/2, products/0]).
+  pingNodes/1, nodes/0, injectPostfix/1, init/0, init/1, rand/1, rand/2, products/0]).
 
 nop(Name) -> io:format("~w waits for a wonder ... ~n", [Name]),
   receive
@@ -36,19 +36,16 @@ sayEx(Strings) -> io:format(string:join(Strings, " ") ++ "~n").
 
 quoted(String) -> "'" ++ String ++ "'".
 % Returns all nodes available.
-nodez() -> injectPostfix(["customer", "cashier",
-  "assistant", "shelf", "issuing_point"]).
+nodes() -> injectPostfix(["customer", "operator",
+  "paymentSystem", "seller", "warehouse"]).
 
-% Returns cookie value.
-cookie() -> newton22.
-
-injectPostfix([Head | Tail]) -> [Head ++ "@127.0.1.0"] ++ injectPostfix(Tail);
+injectPostfix([Head | Tail]) -> [Head ++ "@127.0.0.1"] ++ injectPostfix(Tail);
 injectPostfix([]) -> [].
 
 rand(Ceil) -> floor(rand:uniform() * Ceil).
 rand(From, To) -> floor(From + rand:uniform() * (To - From)).
 
-init() -> case pingNodes(nodez())
+init() -> case pingNodes(nodes())
           of
             {Pings, fail} -> say("Reached nodes: ~p", [[Pings]]),
               timer:sleep(1000), % 1 second
@@ -56,7 +53,7 @@ init() -> case pingNodes(nodez())
             {_, done} -> say("All nodes were reached"), done
           end.
 
-init([Performed]) -> case pingNodes(Performed, nodez())
+init([Performed]) -> case pingNodes(Performed, nodes())
                      of
                        {Pings, fail} -> say("Reached nodes: ~p", [[Pings]]),
                          timer:sleep(1000),
