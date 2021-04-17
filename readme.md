@@ -1,3 +1,3 @@
 # Actors
 
-![System Scheme](VPProjects/func prog.jpg)
+![System Scheme](VPProjects/func_prog.jpg)
