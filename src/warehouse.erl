@@ -12,41 +12,53 @@
 %% API
 -export([main/0]).
 
--import(common, [nop/1, send/2, say/2, sayEx/1, quoted/1, cookie/0, init/0, rand/1, rand/2, products/0]).
+-import(common, [nop/1, send/2, quoted/1, cookie/0, start/0, rand/1, rand/2, products/0]).
 
 -record(product, {count = 0, price = 0.0}).
 
 name() -> warehouse.
 
-%%{Product, {Count, Price}}
-generateEntry(K) -> {K, #product{count = rand(1, 5), price = rand(0, 100)}}.
+%%{Product, {product, Count, Price}}
+generateEntry(K) -> {K, #product{count = rand(1, 10), price = rand(0, 15)}}.
 
 generateStorage() ->
-  maps:from_list(lists:map(fun generateEntry/1, products())).
-%%  Storage = ets:new(storage, []),
+  Storage = ets:new(orders, []),
+  ets:insert(Storage, lists:map(fun generateEntry/1, products())),
+  Storage.
 
-getNewCount(CurCount) ->
-  if
-    CurCount =< 0 -> 0;
-    true -> CurCount - 1
-  end.
+getNewCount(CurCount) when CurCount =< 0 -> 0;
+getNewCount(CurCount) -> CurCount - 1.
 
-subCount(ProductName, Storage) ->
-  ProductInfo = maps:get(ProductName, Storage),
-  maps:put(ProductName, #product{count = getNewCount(ProductInfo#product.count), price = ProductInfo#product.price}, Storage),
-  maps:get(ProductName, Storage).
+subCount(Storage, ProductName) ->
+  {Count, Price} = findProduct(Storage, ProductName),
+  log:sayEx(["Warehouse want delete 1 ", ProductName, ". Current params: count: ", Count, ", price: ", Price]),
+  ets:insert(Storage, {ProductName, #product{count = getNewCount(Count), price = Price}}).
+
+findProduct(Storage, Product) ->
+  findProduct(ets:lookup(Storage, Product)).
+
+findProduct([{_, {_, Count, Price}} | _]) ->
+  {Count, Price};
+findProduct([]) ->
+  {0, 0.0}.
 
 warehouse(Storage) ->
+  log:say(""),
   receive
     {Product, "Select"} ->
-      sayEx(["Warehouse search ", quoted(Product), " in storage"]),
-      CountAndPrice = maps:get(Product, Storage, {0, 0}),
-      send(operator, CountAndPrice);
+      log:sayEx(["Warehouse search ", quoted(Product), " in storage"]),
+      {Count, Price} = findProduct(Storage, Product),
+      send(operator, {Product, Price, Count});
     {Product, "Delete"} ->
-      sayEx(["Warehouse delete one ", quoted(Product), " from storage"]),
-      {Count, Price} = subCount(Product, Storage),
+      log:sayEx(["Warehouse delete one ", quoted(Product), " from storage"]),
+      subCount(Storage, Product),
+      {Count, Price} = findProduct(Storage, Product),
       send(seller, {Product, Price, Count >= 0})
   end, timer:sleep(rand(500, 1500)), warehouse(Storage).
 
-main() -> Warehouse_PID = spawn(fun() -> common:init(), warehouse(generateStorage()) end),
+main() -> Warehouse_PID = spawn(
+  fun() ->
+    common:start(),
+    warehouse(generateStorage())
+  end),
   global:register_name(name(), Warehouse_PID), nop(self()).

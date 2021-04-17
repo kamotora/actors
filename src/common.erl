@@ -10,8 +10,10 @@
 -author("kamotora").
 
 %% API
--export([nop/0, nop/1, nameOf/1, send/2, say/2, quoted/1, say/1, sayEx/1,
-  pingNodes/1, nodes/0, injectPostfix/1, init/0, init/1, rand/1, rand/2, products/0]).
+-export([nop/0, nop/1, nameOf/1, send/2, quoted/1,
+  pingNodes/1, nodes/0, injectPostfix/1, start/0, rand/1, rand/2, products/0, cookie/0]).
+
+cookie() -> test.
 
 nop(Name) -> io:format("~w waits for a wonder ... ~n", [Name]),
   receive
@@ -20,46 +22,53 @@ nop(Name) -> io:format("~w waits for a wonder ... ~n", [Name]),
   nop(Name).
 
 nop() ->
-  io:format("~w waits for a wonder ... ~n", [self()]),
+  log:say("~w waits for a wonder ... ~n", [self()]),
   receive
     Message -> io:format("Got msg=~p~n", [Message])
   end,
   nop().
 
-nameOf(Atom) -> global:whereis_name(Atom).
+nameOf(Atom) ->
+  Name = global:whereis_name(Atom),
+  if
+%%    почему то имя не сразу находится даже после успешного пинга всех нод, поэтому такой костыль
+    Name == undefined -> log:sayEx([Atom, " is undefined, try search arain"]),
+      timer:sleep(rand(300, 1000)), nameOf(Atom);
+    true -> Name
+  end
+.
 
 send(To, Message) -> nameOf(To) ! Message, sent.
 
-say(Message, [Params]) -> io:format(Message ++ "~n", Params).
-say(Message) -> io:format(Message ++ "~n").
-sayEx(Strings) -> io:format(string:join(Strings, " ") ++ "~n").
-
 quoted(String) -> "'" ++ String ++ "'".
-% Returns all nodes available.
-nodes() -> injectPostfix(["customer", "operator",
-  "paymentSystem", "seller", "warehouse"]).
 
-injectPostfix([Head | Tail]) -> [Head ++ "@127.0.0.1"] ++ injectPostfix(Tail);
+% Returns all nodes available.
+nodes() -> injectPostfix(["customer", "operator", "paymentSystem", "seller", "warehouse"]).
+
+injectPostfix([Head | Tail]) -> [Head ++ "@127.0.1.0"] ++ injectPostfix(Tail);
 injectPostfix([]) -> [].
 
 rand(Ceil) -> floor(rand:uniform() * Ceil).
 rand(From, To) -> floor(From + rand:uniform() * (To - From)).
 
-init() -> case pingNodes(nodes())
-          of
-            {Pings, fail} -> say("Reached nodes: ~p", [[Pings]]),
-              timer:sleep(1000), % 1 second
-              init([Pings]);
-            {_, done} -> say("All nodes were reached"), done
-          end.
+%% Пока не начнут пинговаться все ноды, не начинаем работу
+start() ->
+  case pingNodes(common:nodes())
+  of
+    {Pings, fail} -> log:say("Reached nodes: ~p", [[Pings]]),
+      timer:sleep(1000), % 1 second
+      start([Pings]);
+    {_, done} -> log:say("All nodes were reached"), done
+  end.
 
-init([Performed]) -> case pingNodes(Performed, nodes())
-                     of
-                       {Pings, fail} -> say("Reached nodes: ~p", [[Pings]]),
-                         timer:sleep(1000),
-                         init([Pings]);
-                       {_, done} -> say("All nodes were reached"), done
-                     end.
+start([Performed]) ->
+  case pingNodes(Performed, common:nodes())
+  of
+    {Pings, fail} -> log:say("Reached nodes: ~p", [[Pings]]),
+      timer:sleep(1000),
+      start([Pings]);
+    {_, done} -> log:say("All nodes were reached"), done
+  end.
 
 % External
 pingNodes(List) -> pingNodes([], List).
@@ -91,6 +100,7 @@ pingNodes(Except, [Head | Tail], Result) ->
         pang -> pingNodes(Except, Tail, fail)
       end
   end;
+
 
 % Returns such values as
 %   {[<Except + Successful pinged nodes>], done.} - in case if all nodes were pinged.

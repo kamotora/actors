@@ -10,7 +10,7 @@
 -author("kamotora").
 
 -include_lib("eunit/include/eunit.hrl").
--import(common, [injectPostfix/1, pingNodes/2, nodes/0]).
+-import(common, [injectPostfix/1, pingNodes/2]).
 
 inject_postfix_test() ->
   ?assertEqual(["test1@127.0.1.0", "test2@127.0.1.0"], injectPostfix(["test1", "test2"])).
