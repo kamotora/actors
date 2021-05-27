@@ -49,7 +49,7 @@ customer() ->
   end, customer().
 
 main() -> Customer_PID = spawn(fun() ->
-%%  common:start(),
+  common:start(),
   customer() end),
   global:register_name(name(), Customer_PID),
   common:nop(self()).

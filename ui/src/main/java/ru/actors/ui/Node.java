@@ -17,4 +17,9 @@ public enum Node {
     Node(String id) {
         this.id = id + '@' + ADDRESS;
     }
+
+    @Override
+    public String toString() {
+        return id;
+    }
 }

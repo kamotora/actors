@@ -10,12 +10,12 @@ public class Main {
 
     public static final String ADDRESS = "127.0.1.0";
 
-    private static boolean checkPings(OtpNode from) {
+    static boolean checkPings(OtpNode from) {
         return Arrays.stream(Node.values())
                 .allMatch(node -> checkPing(from, node.getId()));
     }
 
-    private static boolean checkPing(OtpNode from, String to) {
+    public static boolean checkPing(OtpNode from, String to) {
         boolean isPing = from.ping(to, 10000);
         if(isPing)
             log.info("Node ping from {} to {} is {}", from.node(), to, "SUCCESS");
