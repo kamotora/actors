@@ -36,7 +36,7 @@ class MainTest {
         OtpPeer customer = new OtpPeer(CUSTOMER.getId());
         assertEquals(customer.node(), CUSTOMER.getId());
         OtpConnection connection = self.connect(customer);
-        connection.send(customer.node(), new OtpErlangString("KEK"));
+        connection.send(customer.node(), msg());
     }
 
     @Test

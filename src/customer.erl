@@ -20,6 +20,9 @@ getRandomProduct() -> lists:nth(rand:uniform(length(products())), products()).
 
 %%todo разбить на функции
 customer() ->
+%%  Product = getRandomProduct(),
+%%  send(operator, {Product}),
+%%  log:sayEx(["Customer want a ", quoted(Product)]),
   log:say(""),
   log:say("Waiting product from Java"),
   receive
