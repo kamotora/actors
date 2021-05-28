@@ -40,11 +40,24 @@ refundOrder(Orders, OrderId) ->
 getStatus(Orders, OrderId) ->
   getStatus(ets:lookup(Orders, OrderId)).
 getStatus([{_, Status} | _]) -> Status;
-getStatus(List) when length(List) == 0-> notFound.
+getStatus(List) when length(List) == 0 -> notFound.
 
 
-main() -> PaymentSystem_PID = spawn(
-  fun() ->
-    common:start(),
-    paymentSystem(ets:new(orders, [])) end),
-  global:register_name(name(), PaymentSystem_PID), nop(self()).
+%%main() -> PaymentSystem_PID = spawn(
+%%  fun() ->
+%%%%    erlang:set_cookie(node(), cookie()),
+%%    common:start(),
+%%    paymentSystem(ets:new(orders, [])) end),
+%%  global:register_name(name(), PaymentSystem_PID),
+%%  nop(self()).
+
+main() ->
+  Pid = spawn(
+    fun() ->
+      erlang:set_cookie(node(), cookie()),
+      common:start(),
+      paymentSystem(ets:new(orders, [])) end),
+  erlang:register(name(), Pid),
+  global:register_name(name(), Pid),
+  io:format("server started with pid (~p)~n", [Pid]),
+  common:nop(self()).

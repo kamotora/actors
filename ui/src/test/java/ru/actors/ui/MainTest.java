@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static ru.actors.ui.Node.CUSTOMER;
+import static ru.actors.ui.MyNode.CUSTOMER;
 
 @Log4j2
 class MainTest {
@@ -43,10 +43,11 @@ class MainTest {
     @SneakyThrows
     public void sendViaMailboxTest() {
         val box = testNode.createMbox();
-        box.send(CUSTOMER.getId(), msg());
+//        box.send(CUSTOMER.getId(), msg());
+        box.send("customer", CUSTOMER.getId(), msg());
     }
 
     private OtpErlangObject msg() {
-        return new OtpErlangString("KEK");
+        return new OtpErlangString("TV");
     }
 }

@@ -5,21 +5,18 @@ import lombok.Getter;
 import static ru.actors.ui.Main.ADDRESS;
 
 @Getter
-public enum Node {
-    CUSTOMER("customer"),
+public enum MyNode {
     WAREHOUSE("warehouse"),
     OPERATOR("warehouse"),
     PAYMENT_SYSTEM("paymentSystem"),
-    SELLER("seller");
+    SELLER("seller"),
+    CUSTOMER("customer"),;
 
     private final String id;
+    private final String node;
 
-    Node(String id) {
-        this.id = id + '@' + ADDRESS;
-    }
-
-    @Override
-    public String toString() {
-        return id;
+    MyNode(String id) {
+        this.id = id;
+        this.node = id + '@' + ADDRESS;
     }
 }

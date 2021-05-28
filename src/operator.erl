@@ -26,13 +26,17 @@ operator() ->
       log:sayEx(["Operator not found ", Product, " in warehouse :("]),
       send(customer, {Product, 0});
     {Product, Price, Count} when Count > 0 ->
-      log:sayEx(["Operator FOUND ", Product, " in warehouse, count:", Count,", price:", Price]),
+      log:sayEx(["Operator FOUND ", Product, " in warehouse, count:", Count, ", price:", Price]),
       send(customer, {uuid:v4(), Product, Price, Count})
   end, timer:sleep(rand(500, 1500)), operator().
 
-main() -> Operator_PID = spawn(
-  fun() ->
-    common:start(),
-    operator() end),
-  global:register_name(name(), Operator_PID),
-  nop(self()).
+main() ->
+  Pid = spawn(
+    fun() ->
+      erlang:set_cookie(node(), cookie()),
+      common:start(),
+      operator() end),
+  erlang:register(name(), Pid),
+  global:register_name(name(), Pid),
+  io:format("server started with pid (~p)~n", [Pid]),
+  common:nop(self()).

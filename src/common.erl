@@ -13,7 +13,7 @@
 -export([nop/0, nop/1, nameOf/1, send/2, quoted/1,
   pingNodes/1, nodes/0, injectPostfix/1, start/0, rand/1, rand/2, products/0, cookie/0]).
 
-cookie() -> test.
+cookie() -> cookie.
 
 nop(Name) -> io:format("~w waits for a wonder ... ~n", [Name]),
   receive
@@ -43,7 +43,7 @@ send(To, Message) -> nameOf(To) ! Message, sent.
 quoted(String) -> "'" ++ String ++ "'".
 
 % Returns all nodes available.
-nodes() -> injectPostfix(["customer", "operator", "paymentSystem", "seller", "warehouse"]).
+nodes() -> injectPostfix(["customer", "operator", "paymentSystem", "seller", "warehouse", "jNodeReceive"]).
 
 injectPostfix([Head | Tail]) -> [Head ++ "@127.0.1.0"] ++ injectPostfix(Tail);
 injectPostfix([]) -> [].

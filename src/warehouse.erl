@@ -56,9 +56,23 @@ warehouse(Storage) ->
       send(seller, {Product, Price, Count >= 0})
   end, timer:sleep(rand(500, 1500)), warehouse(Storage).
 
-main() -> Warehouse_PID = spawn(
-  fun() ->
+%%main() -> Warehouse_PID = spawn(
+%%  fun() ->
+%%
+%%%%    erlang:set_cookie(node(), cookie()),
+%%    common:start(),
+%%    warehouse(generateStorage())
+%%  end),
+%%  global:register_name(name(), Warehouse_PID),
+%%  nop(self()).
+
+main() ->
+  Pid = spawn(fun() ->
+    erlang:set_cookie(node(), cookie()),
     common:start(),
     warehouse(generateStorage())
   end),
-  global:register_name(name(), Warehouse_PID), nop(self()).
+  erlang:register(name(), Pid),
+  global:register_name(name(), Pid),
+  io:format("server started with pid (~p)~n", [Pid]),
+  common:nop(self()).

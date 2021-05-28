@@ -11,26 +11,33 @@ import javax.swing.*;
 @Log4j2
 public class ReceiveRunnable implements Runnable {
 
-    private OtpMbox jProcess;
-    private JLabel ResponseLabel;
+    private final OtpMbox jProcess;
+    private final JTextArea textArea;
 
-    public ReceiveRunnable(OtpMbox jProcess, JLabel responseLabel) {
+    public ReceiveRunnable(OtpMbox jProcess, JTextArea textArea) {
         this.jProcess = jProcess;
-        ResponseLabel = responseLabel;
+        this.textArea = textArea;
     }
 
     @Override
     public void run() {
         try {
-            OtpErlangObject response = jProcess.receive(1000);
+            OtpErlangObject response = jProcess.receive();
+            String responseString;
             if (response instanceof OtpErlangTuple) {
-                String responseString =
+                responseString =
                         ((OtpErlangString) ((OtpErlangTuple) response).elementAt(0))
                                 .stringValue();
-                ResponseLabel.setText(responseString);
+            } else if (response instanceof OtpErlangString) {
+                responseString = ((OtpErlangString) response).stringValue();
+            } else
+                responseString = response != null ? response.toString() : null;
+            if (responseString != null) {
+                log.info("Receive message: {}", responseString);
+                textArea.append(responseString + '\n');
             }
         } catch (Exception e) {
-            log.error(e);
+            log.error("error to receive msg", e);
         }
     }
 }

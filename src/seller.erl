@@ -33,8 +33,12 @@ seller() ->
   end, timer:sleep(rand(500, 1500)), seller().
 
 
-main() -> Seller_PID = spawn(
-  fun() ->
+main() ->
+  Pid = spawn(fun() ->
+    erlang:set_cookie(node(), cookie()),
     common:start(),
     seller() end),
-  global:register_name(name(), Seller_PID), nop(self()).
+  erlang:register(name(), Pid),
+  global:register_name(name(), Pid),
+  io:format("server started with pid (~p)~n", [Pid]),
+  common:nop(self()).

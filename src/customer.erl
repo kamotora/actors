@@ -10,7 +10,7 @@
 -author("kamotora").
 
 %% API
--export([main/0, customer/0]).
+-export([main/0, customer/0, init/0]).
 
 -import(common, [send/2, quoted/1, cookie/0, start/0, rand/1, rand/2, products/0]).
 
@@ -26,35 +26,61 @@ customer() ->
   log:say(""),
   log:say("Waiting product from Java"),
   receive
-    Product ->
-      log:sayEx(["Customer want a ", quoted(Product)]),
+    {JavaPid, Product} ->
+      sendToJava(JavaPid, ["Customer want a ", quoted(Product)]),
+      send(operator, {Product}),
       receive
         {_Product, 0} when Product == _Product ->
-          log:sayEx(["Not found ", quoted(Product)]);
+          sendToJava(JavaPid, ["Not found ", quoted(Product)]);
         {OrderId, _Product, Price, Count} when Price =< 10, Product == _Product ->
           %%      payOrder
-          log:sayEx(["We have ", quoted(Product), ", count: ", Count, ", price: ", Price]),
-          log:sayEx(["Customer want buy a ", quoted(Product), ". OrderID:", OrderId]),
+          sendToJava(JavaPid, ["We have ", quoted(Product), ", count: ", Count, ", price: ", Price]),
+          sendToJava(JavaPid, ["Customer want buy a ", quoted(Product), ". OrderID:", OrderId]),
           send(paymentSystem, {OrderId, Product, Price, "Paid"}),
           %%      waitProduct
-          log:sayEx(["Customer wait product ", quoted(Product), " or refund"]),
+          sendToJava(JavaPid, ["Customer wait product ", quoted(Product), " or refund"]),
           receive
             {_OrderId, Price, "Refund"} when OrderId == _OrderId ->
-              log:sayEx(["Customer getting refund on amount ", Price, " ... :( "]);
+              sendToJava(JavaPid, ["Customer getting refund on amount ", Price, " ... :( "]);
             {_OrderId, Product} when OrderId == _OrderId ->
-              log:sayEx(["Customer SUCCESSFULLY getting ", quoted(Product)])
-          after 5000 -> log:sayEx(["Customer waits for a very long time, he go away..."])
+              sendToJava(JavaPid, ["Customer SUCCESSFULLY getting ", quoted(Product)])
+          after 5000 -> sendToJava(JavaPid, ["Customer waits for a very long time, he go away..."])
           end;
         {_, _, Price, _} when Price >= 10 ->
-          log:sayEx([quoted(Product), " very expensive. Customer have only 10 shekels, customer go away..."])
-      after 5000 -> log:sayEx(["Customer waits for a very long time, he go away..."])
+          sendToJava(JavaPid, [quoted(Product), " very expensive. Customer have only 10 shekels, customer go away..."])
+      after 5000 -> sendToJava(JavaPid, ["Customer waits for a very long time, he go away..."])
       end
   end, customer().
 
-main() -> Customer_PID = spawn(fun() ->
-  common:start(),
-  customer() end),
-  global:register_name(name(), Customer_PID),
+sendToJava(JavaPid, _Strings) ->
+  log:sayEx(_Strings),
+  JavaPid ! lists:concat(_Strings).
+%%main() -> Customer_PID = spawn(fun() ->
+%%  common:start(),
+%%  customer() end),
+%%  global:register_name(name(), Customer_PID),
+%%  common:nop(self()).
+
+main() ->
+  Pid = spawn(
+    fun() ->
+      erlang:set_cookie(node(), cookie()),
+      common:start(),
+      customer() end),
+  erlang:register(name(), Pid),
+  global:register_name(name(), Pid),
+  io:format("server started with pid (~p)~n", [Pid]),
   common:nop(self()).
+
+%%main() ->
+%%  common:start(),
+%%  Pid = spawn(?MODULE, customer, []),
+%%  register(customer, Pid),
+%%  io:format("server started with pid (~p)~n", [Pid]),
+%%  erlang:set_cookie(node(), cookie()),
+%%  common:nop(self()).
+
+init() ->
+  customer().
 
 

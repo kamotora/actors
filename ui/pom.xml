@@ -37,6 +37,21 @@
             <version>5.1.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>21.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.appulse.encon</groupId>
+            <artifactId>encon</artifactId>
+            <version>1.6.10</version>
+        </dependency>
+        <dependency>
+            <groupId>io.appulse.epmd.java</groupId>
+            <artifactId>server</artifactId>
+            <version>2.0.2</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
