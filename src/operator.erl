@@ -20,13 +20,13 @@ operator() ->
   log:say(""),
   receive
     {Product} ->
-      log:sayEx(["Operator search ", quoted(Product), " in warehouse"]),
+      common:sendToJava(["Operator search ", quoted(Product), " in warehouse"]),
       send(warehouse, {Product, "Select"});
     {Product, _, Count} when Count == 0 ->
-      log:sayEx(["Operator not found ", Product, " in warehouse :("]),
+      common:sendToJava(["Operator not found ", Product, " in warehouse :("]),
       send(customer, {Product, 0});
     {Product, Price, Count} when Count > 0 ->
-      log:sayEx(["Operator FOUND ", Product, " in warehouse, count:", Count, ", price:", Price]),
+      common:sendToJava(["Operator FOUND ", Product, " in warehouse, count:", Count, ", price:", Price]),
       send(customer, {uuid:v4(), Product, Price, Count})
   end, timer:sleep(rand(500, 1500)), operator().
 

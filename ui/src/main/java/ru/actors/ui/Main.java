@@ -1,8 +1,6 @@
 package ru.actors.ui;
 
 import com.ericsson.otp.erlang.OtpNode;
-import io.appulse.encon.Nodes;
-import io.appulse.encon.config.NodeConfig;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.Arrays;
@@ -32,8 +30,9 @@ public class Main {
         senderNode.setCookie("cookie");
         OtpNode receiveNode = new OtpNode("jNodeReceive@" + ADDRESS);
         receiveNode.setCookie("cookie");
-        if (checkPings(senderNode)) {
+        if (checkPings(senderNode) && checkPings(receiveNode)) {
             new CustomerForm(senderNode, receiveNode);
+            new MainForm(receiveNode);
         }
 
     }

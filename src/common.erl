@@ -11,7 +11,7 @@
 
 %% API
 -export([nop/0, nop/1, nameOf/1, send/2, quoted/1,
-  pingNodes/1, nodes/0, injectPostfix/1, start/0, rand/1, rand/2, products/0, cookie/0]).
+  pingNodes/1, nodes/0, injectPostfix/1, start/0, rand/1, rand/2, products/0, cookie/0, sendToJava/1, sendToJava/2]).
 
 cookie() -> cookie.
 
@@ -109,4 +109,12 @@ pingNodes(Except, [], Result) -> {Except, Result}.
 
 products() ->
   ["Book", "Phone", "Card", "Notebook", "Speakers", "TV"].
+
+sendToJava(_Strings) ->
+  log:sayEx(_Strings),
+  {loggerNode, 'jNodeReceive@127.0.1.0'} ! {self(), lists:concat(_Strings)}.
+
+sendToJava(Node, _Strings) ->
+  log:sayEx(_Strings),
+  {Node, 'jNodeReceive@127.0.1.0'} ! {self(), lists:concat(_Strings)}.
 

@@ -8,7 +8,6 @@ import lombok.extern.log4j.Log4j2;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -25,14 +24,18 @@ public class MainForm extends JFrame {
     private ScheduledExecutorService executor;
 
     @SneakyThrows
-    public MainForm(OtpNode sendNode, OtpNode receiveNode, List<MyNode> nodes) {
+    public MainForm(OtpNode receiveNode) {
         executor = Executors.newSingleThreadScheduledExecutor();
         receive = receiveNode;
         setContentPane(panel);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(new Dimension(600, 600));
+        setSize(new Dimension(900, 600));
         setVisible(true);
+        setTitle("Workers logs");
         receiveMbox = receiveNode.createMbox();
+        boolean b = receiveMbox.registerName("loggerNode");
+        if(!b)
+            log.error("Error to register ");
         executor.scheduleAtFixedRate(new ReceiveRunnable(receiveMbox, textArea1), 0, 1000, TimeUnit.MILLISECONDS);
     }
 }

@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 public class CustomerForm extends JFrame {
     private final ScheduledExecutorService executor;
     private final OtpMbox receiverMbox;
-    private final OtpErlangPid receiverPid;
     private JTextArea textArea1;
     private JButton sendButton;
     private JPanel panel;
@@ -53,12 +52,12 @@ public class CustomerForm extends JFrame {
         this.sender = sender;
         setContentPane(mainPanel);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(new Dimension(600, 600));
+        setSize(new Dimension(900, 600));
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
+        setTitle("Customer");
         senderMbox = sender.createMbox();
-        this.receiverPid = receiver.createPid();
-        this.receiverMbox = receiver.createMbox();
+        this.receiverMbox = receiver.createMbox("customerReceiver");
         executor.scheduleAtFixedRate(new ReceiveRunnable(receiverMbox, textArea1), 0, 1000, TimeUnit.MILLISECONDS);
         sendButton.addActionListener(actionEvent -> {
             val product = getProduct();
@@ -69,7 +68,7 @@ public class CustomerForm extends JFrame {
 
     @SneakyThrows
     private void sendMsg(MyNode node, String text) {
-        OtpErlangObject msg = new OtpErlangTuple(new OtpErlangObject[]{receiverMbox.self(), new OtpErlangString(text)});
+        OtpErlangObject msg = new OtpErlangTuple(new OtpErlangObject[]{new OtpErlangString(text)});
         senderMbox.send(node.getId(), node.getNode(), msg);
         log.info("Message sended to {}: {}", node.getId(), msg);
     }

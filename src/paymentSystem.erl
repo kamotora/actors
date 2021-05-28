@@ -17,16 +17,16 @@
 name() -> paymentSystem.
 
 paymentSystem(Orders) ->
-  log:say(""),
-  log:sayEx(["Payment system wait payment"]),
+  common:sendToJava([""]),
+  common:sendToJava(["Payment system wait payment"]),
   receive
     {OrderId, Product, Price, Type} when Type == "Paid" ->
-      log:sayEx(["Get payment for ", quoted(Product), ", amount: ", Price]),
+      common:sendToJava(["Get payment for ", quoted(Product), ", amount: ", Price]),
       ets:insert(Orders, {OrderId, "Paid"}),
       send(seller, {OrderId, Product, Type}),
-      log:sayEx(["Send seller, that ", quoted(Product), " was paid, price: ", Price]);
+      common:sendToJava(["Send seller, that ", quoted(Product), " was paid, price: ", Price]);
     {OrderId, Product, Price, Type} when Type == "Refund" ->
-      log:sayEx(["Get refund for ", quoted(Product), ", amount: ", Price]),
+      common:sendToJava(["Get refund for ", quoted(Product), ", amount: ", Price]),
       refundOrder(OrderId, Orders),
       send(customer, {OrderId, Price, "Refund"})
   end, timer:sleep(rand(500, 1500)), paymentSystem(Orders).

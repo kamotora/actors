@@ -17,17 +17,17 @@
 name() -> seller.
 
 seller() ->
-  log:say(""),
+  common:sendToJava([""]),
   receive
     {OrderId, Product, "Paid"} ->
-      log:sayEx(["Seller search ", quoted(Product), " in warehouse"]),
+      common:sendToJava(["Seller search ", quoted(Product), " in warehouse"]),
       send(warehouse, {Product, "Delete"}),
       receive
         {Product, Price, false} ->
-          log:sayEx(["Seller NOT found ", quoted(Product), " in warehouse"]),
+          common:sendToJava(["Seller NOT found ", quoted(Product), " in warehouse"]),
           send(paymentSystem, {OrderId, Product, Price, "Refund"});
         {Product, _, true} ->
-          log:sayEx(["Seller FOUND ", quoted(Product), " in warehouse"]),
+          common:sendToJava(["Seller FOUND ", quoted(Product), " in warehouse"]),
           send(customer, {OrderId, Product})
       end
   end, timer:sleep(rand(500, 1500)), seller().

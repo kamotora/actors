@@ -43,8 +43,7 @@ class MainTest {
     @SneakyThrows
     public void sendViaMailboxTest() {
         val box = testNode.createMbox();
-//        box.send(CUSTOMER.getId(), msg());
-        box.send("customer", CUSTOMER.getId(), msg());
+        box.send(CUSTOMER.getId(), CUSTOMER.getNode(), msg());
     }
 
     private OtpErlangObject msg() {

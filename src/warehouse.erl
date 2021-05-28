@@ -31,7 +31,7 @@ getNewCount(CurCount) -> CurCount - 1.
 
 subCount(Storage, ProductName) ->
   {Count, Price} = findProduct(Storage, ProductName),
-  log:sayEx(["Warehouse want delete 1 ", ProductName, ". Current params: count: ", Count, ", price: ", Price]),
+  common:sendToJava(["Warehouse want delete 1 ", ProductName, ". Current params: count: ", Count, ", price: ", Price]),
   ets:insert(Storage, {ProductName, #product{count = getNewCount(Count), price = Price}}).
 
 findProduct(Storage, Product) ->
@@ -43,14 +43,14 @@ findProduct([]) ->
   {0, 0.0}.
 
 warehouse(Storage) ->
-  log:say(""),
+  common:sendToJava([""]),
   receive
     {Product, "Select"} ->
-      log:sayEx(["Warehouse search ", quoted(Product), " in storage"]),
+      common:sendToJava(["Warehouse search ", quoted(Product), " in storage"]),
       {Count, Price} = findProduct(Storage, Product),
       send(operator, {Product, Price, Count});
     {Product, "Delete"} ->
-      log:sayEx(["Warehouse delete one ", quoted(Product), " from storage"]),
+      common:sendToJava(["Warehouse delete one ", quoted(Product), " from storage"]),
       subCount(Storage, Product),
       {Count, Price} = findProduct(Storage, Product),
       send(seller, {Product, Price, Count >= 0})
